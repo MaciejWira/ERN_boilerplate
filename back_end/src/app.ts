@@ -1,24 +1,40 @@
 import express from 'express';
-import test from './test/index';
+import path from 'path';
+import mongoose from 'mongoose';
+import { configDB } from './config/configDB';
+
+// set up an app
 
 const app = express();
 
-const PORT  =process.env.PORT || 8080;
+const PORT = process.env.PORT || 8080;
 
-app.get('/test', (req, res) => {
-  res.send('Backend test message!');
-});
+// connect to db
+mongoose.connect(
+  configDB.uri,
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  }
+)
+  .then(() => {
+    console.log('connected to database');
+    app.listen(PORT, () => {
+      console.log(`Listening to port ${PORT}.`);
+    });
+  })
+  .catch(err => console.log(err))
 
-// for deploy
-app.use('/static', express.static(__dirname + '/build/static'));
-app.use('/static/css', express.static(__dirname + '/build/static/css'));
-app.use('/static/js', express.static(__dirname + '/build/static/js'));
+  app.get('/test', (req, res) => {
+    res.send('Backend test message!');
+  });
 
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/build/index.html');
-});
-// for deploy end
+  // for deploy
+  app.use('/static', express.static(__dirname + '/build/static'));
+  app.use('/static/css', express.static(__dirname + '/build/static/css'));
+  app.use('/static/js', express.static(__dirname + '/build/static/js'));
 
-app.listen(PORT, () => {
-  console.log(`Listening to port ${PORT}. Test: ${test}`);
-});
+  app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/build/index.html');
+  });
+  // for deploy end
